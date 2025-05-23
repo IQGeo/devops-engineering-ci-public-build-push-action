@@ -1,13 +1,110 @@
 name: 'IQGeo test action'
 description: 'test echo commands'
 
+inputs:
+  version:
+    required: true
+    type: string
+  tag:
+    required: true
+    type: string
+  platform:
+    required: true
+    type: string
+  module:
+    type: string      
+  registry_login_server:
+    required: true
+    type: string
+  registry_username:
+    required: true
+    type: string
+  registry_password:
+    required: true
+    type: string 
+  dockerfile_path:
+    type: string
+  docker_context:
+    type: string
+  HARBOR_CLI_SECRET:
+    type: string
+  HARBOR_USERNAME:
+    type: string
+
 runs:
     using: "composite"
     steps:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
+        
+      # - name: Checkout Product repo
+      #   uses: actions/checkout@v4    
+      #   with:
+      #       path: ${{github.event.repository.name}}  
+        
+      # - name: Checkout Language Packs
+      #   uses: actions/checkout@v4
+      #   with:
+      #       repo: IQGeo/utils-language-packs
+      #       path: utils-language-packs
+      #       token: ${{ secrets.GH_TOKEN }}
+    
+      # - name: Copy Language Packs from utils-language-packs
+      #   run: |
+      #       echo "Copying language packs from utils-language-packs"
 
-      - name: Echo success
+      - name: Create dir for binaries
         shell: bash
         run: |
-          echo "Hit test action in actions repo"
+            pwd
+            ls -la
+            echo "VERSION: $VERSION"
+            echo "LOGIN SERVER: $REGISTRY_LOGIN_SERVER"
+            echo "TAG: $TAG"
+            mkdir -p $GITHUB_WORKSPACE/$MODULE/$VERSION
+            ls -la $GITHUB_WORKSPACE/$MODULE
+        env:
+          VERSION: ${{ inputs.version }}
+          REGISTRY_LOGIN_SERVER: ${{ inputs.registry_login_server }}
+          TAG: ${{ inputs.tag }}
+          MODULE: ${{ inputs.module }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Add logic/conditional here to only download artifacts for injector builds
+      - uses: actions/download-artifact@v4
+        with:
+            name: binaries
+            path: ${{ inputs.module }}
+
+      - name: Display structure of downloaded files
+        shell: bash
+        run: ls -R $GITHUB_WORKSPACE/$MODULE
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          MODULE: ${{ inputs.module }}
+
+      - name: 'login to ACR'
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ inputs.registry_login_server }}
+          username: ${{ inputs.registry_username }}
+          password: ${{ inputs.registry_password }}
+        
+      - name: build and push image (default context)
+        shell: bash
+        run: |
+          docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET harbor.delivery.iqgeo.cloud
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t iqgeoproddev.azurecr.io/$MODULE:$TAG
+          docker push iqgeoproddev.azurecr.io/$MODULE:$TAG
+        env:
+          VERSION: ${{ inputs.version }}
+          TAG: ${{ inputs.tag }}
+          MODULE: ${{ inputs.module }}
+          CONTEXT_BUILD: ${{ inputs.docker_context }}
+          DOCKERFILE: ${{ inputs.dockerfile_path }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          HARBOR_CLI_SECRET: ${{ inputs.HARBOR_CLI_SECRET }}
+          HARBOR_USERNAME: ${{ inputs.HARBOR_USERNAME }}
