@@ -1,4 +1,5 @@
 name: 'IQGeo test action'
+description: 'test echo commands'
 
 runs:
     using: "composite"
