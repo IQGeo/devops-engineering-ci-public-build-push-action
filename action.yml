@@ -12,7 +12,11 @@ inputs:
     required: true
     type: string
   module:
-    type: string      
+    type: string   
+  acr:
+    type: string
+  harbor:
+    type: string   
   registry_login_server:
     required: true
     type: string
@@ -96,9 +100,9 @@ runs:
       - name: build and push image (default context)
         shell: bash
         run: |
-          docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET harbor.delivery.iqgeo.cloud
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t iqgeoproddev.azurecr.io/$MODULE:$TAG
-          docker push iqgeoproddev.azurecr.io/$MODULE:$TAG
+          docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
+          docker push $ACR/$MODULE:$TAG
         env:
           VERSION: ${{ inputs.version }}
           TAG: ${{ inputs.tag }}
@@ -108,3 +112,5 @@ runs:
           GITHUB_WORKSPACE: ${{ github.workspace }}
           HARBOR_CLI_SECRET: ${{ inputs.HARBOR_CLI_SECRET }}
           HARBOR_USERNAME: ${{ inputs.HARBOR_USERNAME }}
+          ACR: ${{ inputs.acr }}
+          HARBOR: ${{ inputs.harbor }}
