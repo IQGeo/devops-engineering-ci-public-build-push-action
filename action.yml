@@ -30,9 +30,9 @@ inputs:
     type: string
   docker_context:
     type: string
-  HARBOR_CLI_SECRET:
+  harbor_cli_secret:
     type: string
-  HARBOR_USERNAME:
+  harbor_username:
     type: string
 
 runs:
@@ -110,7 +110,7 @@ runs:
           CONTEXT_BUILD: ${{ inputs.docker_context }}
           DOCKERFILE: ${{ inputs.dockerfile_path }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
-          HARBOR_CLI_SECRET: ${{ inputs.HARBOR_CLI_SECRET }}
-          HARBOR_USERNAME: ${{ inputs.HARBOR_USERNAME }}
+          HARBOR_CLI_SECRET: ${{ inputs.harbor_cli_secret }}
+          HARBOR_USERNAME: ${{ inputs.harbor_username }}
           ACR: ${{ inputs.acr }}
           HARBOR: ${{ inputs.harbor }}
