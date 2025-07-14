@@ -115,6 +115,6 @@ runs:
           HARBOR_USERNAME: ${{ inputs.harbor_username }}
           ACR: ${{ inputs.acr }}
           HARBOR: ${{ inputs.harbor }}
-          REGISTRY_LOGIN_SERVER: ${{ registry_login_server }}
-          REGISTRY_USERNAME: ${{ registry_username }}
-          REGISTRY_PASWORD: ${{ registry_password}}
+          REGISTRY_LOGIN_SERVER: ${{ inputs.registry_login_server }}
+          REGISTRY_USERNAME: ${{ inputs.registry_username }}
+          REGISTRY_PASWORD: ${{ inputs.registry_password}}
