@@ -90,16 +90,17 @@ runs:
           GITHUB_WORKSPACE: ${{ github.workspace }}
           MODULE: ${{ inputs.module }}
 
-      - name: 'login to ACR'
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ inputs.registry_login_server }}
-          username: ${{ inputs.registry_username }}
-          password: ${{ inputs.registry_password }}
+      # - name: 'login to ACR'
+      #   uses: azure/docker-login@v1
+      #   with:
+      #     login-server: ${{ inputs.registry_login_server }}
+      #     username: ${{ inputs.registry_username }}
+      #     password: ${{ inputs.registry_password }}
         
       - name: build and push image (default context)
         shell: bash
         run: |
+          docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD -n $REGISTRY_LOGIN_SERVER
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
           docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
           docker push $ACR/$MODULE:$TAG
@@ -114,3 +115,6 @@ runs:
           HARBOR_USERNAME: ${{ inputs.harbor_username }}
           ACR: ${{ inputs.acr }}
           HARBOR: ${{ inputs.harbor }}
+          REGISTRY_LOGIN_SERVER: ${{ registry_login_server }}
+          REGISTRY_USERNAME: ${{ registry_username }}
+          REGISTRY_PASWORD: ${{ registry_password}}
