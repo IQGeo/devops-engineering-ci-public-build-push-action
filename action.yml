@@ -100,7 +100,7 @@ runs:
       - name: build and push image (default context)
         shell: bash
         run: |
-          docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD -n $REGISTRY_LOGIN_SERVER
+          docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $REGISTRY_LOGIN_SERVER
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
           docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
           docker push $ACR/$MODULE:$TAG
