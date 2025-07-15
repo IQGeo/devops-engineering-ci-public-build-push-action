@@ -102,11 +102,11 @@ runs:
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $REGISTRY_LOGIN_SERVER
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$RUN_ID
-          docker push $ACR/$MODULE:$RUN_ID
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
+          docker push $ACR/$MODULE:$TAG
         env:
           VERSION: ${{ inputs.version }}
-          # TAG: ${{ inputs.tag }}
+          TAG: ${{ inputs.tag }}
           MODULE: ${{ inputs.module }}
           CONTEXT_BUILD: ${{ inputs.docker_context }}
           DOCKERFILE: ${{ inputs.dockerfile_path }}
@@ -118,4 +118,3 @@ runs:
           REGISTRY_LOGIN_SERVER: ${{ inputs.registry_login_server }}
           REGISTRY_USERNAME: ${{ inputs.registry_username }}
           REGISTRY_PASWORD: ${{ inputs.registry_password}}
-          RUN_ID: ${{ github.run_id }}
