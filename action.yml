@@ -1,36 +1,54 @@
-name: 'IQGeo test action'
-description: 'test echo commands'
+name: 'Build and push arm64 + amd64 images'
+description: 'IQGeo reusable action to build arm64 + amd64 images based on supplied parameters'
 
 inputs:
   version:
+    description: 'Version to build'
     required: true
     type: string
   tag:
+    description: 'Unique number of Build ID for this workflow run'
+    required: true
     type: string
   platform:
+    description: 'Which OS arch to build this image on (amd64, arm64)'
+    required: true
     type: string
   module:
-    type: string   
-  acr:
+    description: 'Module to build (product, devdb, editions)'
+    required: true
     type: string
-  harbor:
-    type: string   
-  registry_login_server:
+  dockerfile_path:
+    description: 'Path to the dockerfile for this specific image build (injector, platform w/ module, editions)'
+    required: true
+    type: string
+  docker_context:
+    description: 'Build context for the docker image to reference'
+    required: true
+    type: string
+  acr:
+    description: 'IQGeos Azure container registry server name'
     required: true
     type: string
   registry_username:
+    description: 'IQGeos Azure container registry username for logging into Azure'
     required: true
     type: string
   registry_password:
+    description: 'IQGeos Azure container registry password for logging into Azure'
     required: true
-    type: string 
-  dockerfile_path:
     type: string
-  docker_context:
+  harbor:
+    description: 'IQGeos Harbor container registry server name'
+    required: true
     type: string
   harbor_cli_secret:
+    description: 'IQGeos Harbor container registry password for logging into Azure'
+    required: true
     type: string
   harbor_username:
+    description: 'IQGeos Harbor container registry username for logging into Azure'
+    required: true
     type: string
 
 runs:
@@ -61,13 +79,13 @@ runs:
             pwd
             ls -la
             echo "VERSION: $VERSION"
-            echo "LOGIN SERVER: $REGISTRY_LOGIN_SERVER"
+            echo "LOGIN SERVER: $ACR"
             echo "TAG: $TAG"
             mkdir -p $GITHUB_WORKSPACE/$MODULE/$VERSION
             ls -la $GITHUB_WORKSPACE/$MODULE
         env:
           VERSION: ${{ inputs.version }}
-          REGISTRY_LOGIN_SERVER: ${{ inputs.registry_login_server }}
+          ACR: ${{ inputs.acr }}
           TAG: ${{ inputs.tag }}
           MODULE: ${{ inputs.module }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
@@ -87,18 +105,11 @@ runs:
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
           MODULE: ${{ inputs.module }}
-
-      # - name: 'login to ACR'
-      #   uses: azure/docker-login@v1
-      #   with:
-      #     login-server: ${{ inputs.registry_login_server }}
-      #     username: ${{ inputs.registry_username }}
-      #     password: ${{ inputs.registry_password }}
         
       - name: build and push image (default context)
         shell: bash
         run: |
-          docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $REGISTRY_LOGIN_SERVER
+          docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
           docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
           docker push $ACR/$MODULE:$TAG
@@ -109,10 +120,9 @@ runs:
           CONTEXT_BUILD: ${{ inputs.docker_context }}
           DOCKERFILE: ${{ inputs.dockerfile_path }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          HARBOR: ${{ inputs.harbor }}
           HARBOR_CLI_SECRET: ${{ inputs.harbor_cli_secret }}
           HARBOR_USERNAME: ${{ inputs.harbor_username }}
           ACR: ${{ inputs.acr }}
-          HARBOR: ${{ inputs.harbor }}
-          REGISTRY_LOGIN_SERVER: ${{ inputs.registry_login_server }}
           REGISTRY_USERNAME: ${{ inputs.registry_username }}
           REGISTRY_PASWORD: ${{ inputs.registry_password}}
