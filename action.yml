@@ -69,7 +69,7 @@ runs:
       - name: Checkout Language Packs
         uses: actions/checkout@v4
         with:
-            repo: IQGeo/utils-language-packs
+            repository: IQGeo/utils-language-packs
             path: utils-language-packs
             token: ${{ inputs.gh_token }}
 
@@ -78,6 +78,8 @@ runs:
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
+            echo "LANG_REPO=$GITHUB_WORKSPACE/utils-language-packs" >> $GITHUB_ENV
+            echo "Language Pack Directory: $LANG_REPO"
             pwd
             ls -la
             ls -la utils-language-packs
