@@ -71,7 +71,7 @@ runs:
         with:
             repo: IQGeo/utils-language-packs
             path: utils-language-packs
-            token: ${{ secrets.GH_TOKEN }}
+            token: ${{ inputs.gh_token }}
 
     # make version dynamic
       - name: Copy Language Packs from utils-language-packs
