@@ -80,12 +80,11 @@ runs:
             echo "Copying language packs from utils-language-packs"
             pwd
             ls -la
-            echo "LANG_REPO=$GITHUB_WORKSPACE/utils-language-packs" >> $GITHUB_ENV
-            echo "Language Pack Directory: $LANG_REPO"
+            ls -la utils-language-packs
             echo "Copy Language Packs from utils-language-packs repo"
             mkdir $GITHUB_WORKSPACE/$MODULE/v41
             mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
-            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/v41 $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/v41/ $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
             ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
         env:
           MODULE: ${{ inputs.module }}
