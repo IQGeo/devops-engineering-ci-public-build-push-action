@@ -83,6 +83,7 @@ runs:
             echo "LANG_REPO=$GITHUB_WORKSPACE/utils-language-packs" >> $GITHUB_ENV
             echo "Language Pack Directory: $LANG_REPO"
             echo "Copy Language Packs from utils-language-packs repo"
+            mkdir $GITHUB_WORKSPACE/$MODULE/v41
             mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
             cp -RT $LANG_REPO/$MODULE/v41 $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
             ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
