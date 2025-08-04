@@ -75,6 +75,7 @@ runs:
 
     # make version dynamic
       - name: Copy Language Packs from utils-language-packs
+        shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
             pwd
