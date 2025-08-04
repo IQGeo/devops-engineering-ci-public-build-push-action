@@ -73,24 +73,33 @@ runs:
             path: utils-language-packs
             token: ${{ inputs.gh_token }}
 
-    # make version dynamic
+    # make version dynamic here AND in dockerfile.injector in main repo (need to set it earlier in the extract-versions action) 
       - name: Copy Language Packs from utils-language-packs
         continue-on-error: true
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
+            mkdir $GITHUB_WORKSPACE/$MODULE/v41
+            mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
             pwd
             ls -la
             ls -la utils-language-packs
             ls -la utils-language-packs/$MODULE
             echo "Copy Language Packs from utils-language-packs repo"
-            mkdir $GITHUB_WORKSPACE/$MODULE/v41
-            mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
             cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/v41/ $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
             ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
         env:
           MODULE: ${{ inputs.module }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
+
+      - name: Check if module exist in language pack repo; if it doesn't add a placeholder for the dockerfile.injector language pack add step
+        shell: bash
+        if: endsWith(inputs.module, 'dev_db')
+        run: |
+            echo "# Language Pack Directory placeholder" > $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/README.md
+        env:
+          MODULE: ${{ inputs.module }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}    
 
       - name: Create dir for binaries
         shell: bash
