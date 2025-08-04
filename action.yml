@@ -81,6 +81,7 @@ runs:
             pwd
             ls -la
             ls -la utils-language-packs
+            ls -la utils-language-packs/$MODULE
             echo "Copy Language Packs from utils-language-packs repo"
             mkdir $GITHUB_WORKSPACE/$MODULE/v41
             mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
