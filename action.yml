@@ -61,11 +61,6 @@ runs:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
         
-      # - name: Checkout Product repo
-      #   uses: actions/checkout@v4    
-      #   with:
-      #       path: ${{github.event.repository.name}}  
-        
       - name: Checkout Language Packs
         uses: actions/checkout@v4
         with:
