@@ -85,7 +85,7 @@ runs:
             echo "Copy Language Packs from utils-language-packs repo"
             mkdir $GITHUB_WORKSPACE/$MODULE/v41
             mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
-            cp -RT $LANG_REPO/$MODULE/v41 $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/v41 $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
             ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
         env:
           MODULE: ${{ inputs.module }}
