@@ -50,6 +50,10 @@ inputs:
     description: 'IQGeos Harbor container registry username for logging into Azure'
     required: true
     type: string
+  gh_token:
+    description: 'GitHub token to clone repos from IQGeo org'
+    required: true
+    type: string
 
 runs:
     using: "composite"
@@ -62,16 +66,27 @@ runs:
       #   with:
       #       path: ${{github.event.repository.name}}  
         
-      # - name: Checkout Language Packs
-      #   uses: actions/checkout@v4
-      #   with:
-      #       repo: IQGeo/utils-language-packs
-      #       path: utils-language-packs
-      #       token: ${{ secrets.GH_TOKEN }}
-    
-      # - name: Copy Language Packs from utils-language-packs
-      #   run: |
-      #       echo "Copying language packs from utils-language-packs"
+      - name: Checkout Language Packs
+        uses: actions/checkout@v4
+        with:
+            repo: IQGeo/utils-language-packs
+            path: utils-language-packs
+            token: ${{ secrets.GH_TOKEN }}
+
+    # make version dynamic
+      - name: Copy Language Packs from utils-language-packs
+        run: |
+            echo "Copying language packs from utils-language-packs"
+            pwd
+            ls -la
+            echo "LANG_REPO=$GITHUB_WORKSPACE/utils-language-packs" >> $GITHUB_ENV
+            echo "Language Pack Directory: $LANG_REPO"
+            echo "Copy Language Packs from utils-language-packs repo"
+            mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+            cp -RT $LANG_REPO/$MODULE/v41 $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+            ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+        env:
+          MODULE: ${{ inputs.module }}
 
       - name: Create dir for binaries
         shell: bash
@@ -79,7 +94,6 @@ runs:
             pwd
             ls -la
             echo "VERSION: $VERSION"
-            echo "LOGIN SERVER: $ACR"
             echo "TAG: $TAG"
             mkdir -p $GITHUB_WORKSPACE/$MODULE/$VERSION
             ls -la $GITHUB_WORKSPACE/$MODULE
