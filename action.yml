@@ -75,11 +75,10 @@ runs:
 
     # make version dynamic
       - name: Copy Language Packs from utils-language-packs
+        continue-on-error: true
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
-            echo "LANG_REPO=$GITHUB_WORKSPACE/utils-language-packs" >> $GITHUB_ENV
-            echo "Language Pack Directory: $LANG_REPO"
             pwd
             ls -la
             ls -la utils-language-packs
