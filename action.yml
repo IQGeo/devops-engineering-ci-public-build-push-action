@@ -57,7 +57,6 @@ inputs:
   shortened_version:
     description: 'Shortened Version to query utils-language-packs repo to copy language packs over for injector builds'
     type: string
-    required: true
 
 runs:
     using: "composite"
