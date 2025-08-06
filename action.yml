@@ -72,14 +72,6 @@ runs:
             path: utils-language-packs
             token: ${{ inputs.gh_token }}
 
-      - name: debug
-        shell: bash
-        run: |
-            echo "shortened_version=$SHORTENED_VERSION"
-        env:
-          SHORTENED_VERSION: ${{ inputs.shortened_version }}
-
-    # make version dynamic here AND in dockerfile.injector in main repo (need to set it earlier in the extract-versions action) 
       - name: Copy Language Packs from utils-language-packs
         continue-on-error: true
         shell: bash
