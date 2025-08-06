@@ -54,6 +54,10 @@ inputs:
     description: 'GitHub token to clone repos from IQGeo org'
     required: true
     type: string
+  shortened_version:
+    description: 'Shortened Version to query utils-language-packs repo to copy language packs over for injector builds'
+    type: string
+    required: true
 
 runs:
     using: "composite"
@@ -68,33 +72,34 @@ runs:
             path: utils-language-packs
             token: ${{ inputs.gh_token }}
 
-    # make version dynamic here AND in dockerfile.injector in main repo (need to set it earlier in the extract-versions action) 
       - name: Copy Language Packs from utils-language-packs
         continue-on-error: true
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
-            mkdir $GITHUB_WORKSPACE/$MODULE/v41
-            mkdir $GITHUB_WORKSPACE/$MODULE/v41/languagepacks
+            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
+            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
             pwd
             ls -la
             ls -la utils-language-packs
             ls -la utils-language-packs/$MODULE
             echo "Copy Language Packs from utils-language-packs repo"
-            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/v41/ $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
-            ls -la $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/
+            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/$SHORTENED_VERSION/ $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/
+            ls -la $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/
         env:
           MODULE: ${{ inputs.module }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          SHORTENED_VERSION: ${{ inputs.shortened_version }}
 
       - name: Check if module exist in language pack repo; if it doesn't add a placeholder for the dockerfile.injector language pack add step
         shell: bash
         if: endsWith(inputs.module, 'dev_db')
         run: |
-            echo "# Language Pack Directory placeholder" > $GITHUB_WORKSPACE/$MODULE/v41/languagepacks/README.md
+            echo "# Language Pack Directory placeholder" > $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/README.md
         env:
           MODULE: ${{ inputs.module }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}    
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          SHORTENED_VERSION: ${{ inputs.shortened_version }}
 
       - name: Create dir for binaries
         shell: bash
@@ -133,10 +138,11 @@ runs:
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
           docker push $ACR/$MODULE:$TAG
         env:
           VERSION: ${{ inputs.version }}
+          SHORTENED_VERSION: ${{ inputs.shortened_version }}
           TAG: ${{ inputs.tag }}
           MODULE: ${{ inputs.module }}
           CONTEXT_BUILD: ${{ inputs.docker_context }}
