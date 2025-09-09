@@ -58,6 +58,10 @@ inputs:
     description: 'Shortened Version to query utils-language-packs repo to copy language packs over for injector builds'
     type: string
     required: true
+  engineering_prefix:
+    description: 'Engineering prefix to place multi arch images in Harbor'
+    type: string
+    default: devops_sandbox_engineering
 
 runs:
     using: "composite"
@@ -139,8 +143,8 @@ runs:
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$MODULE:$TAG
-          docker push $ACR/$MODULE:$TAG
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
+          docker push $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
         env:
           VERSION: ${{ inputs.version }}
           SHORTENED_VERSION: ${{ inputs.shortened_version }}
@@ -155,3 +159,4 @@ runs:
           ACR: ${{ inputs.acr }}
           REGISTRY_USERNAME: ${{ inputs.registry_username }}
           REGISTRY_PASWORD: ${{ inputs.registry_password}}
+          ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
