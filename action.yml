@@ -150,8 +150,9 @@ runs:
       - name: Cache node modules
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 18
           cache: 'npm'
+          cache-dependency-path: workflow_manager/package-lock.json
 
       - name: Install dependencies and test
         shell: bash
