@@ -148,11 +148,13 @@ runs:
             ${{ runner.os }}-node-
 
       - if: ${{ steps.npm-cache.outputs.cache-hit != 'true' }}
+        shell: bash
         name: List the state of node modules
         continue-on-error: true
         run: npm list
 
       - name: Install dependencies
+        shell: bash
         run: npm install
         
       - name: build and push image (default context)
