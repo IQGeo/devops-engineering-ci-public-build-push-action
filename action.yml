@@ -124,19 +124,19 @@ runs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Download binaries for injector builds (skips modules editions)
-        if: "!contains(inputs.module, 'editions')"
-        uses: actions/download-artifact@v4
-        with:
-            name: binaries
-            path: ${{ inputs.module }}
+      # - name: Download binaries for injector builds (skips modules editions)
+      #   if: "!contains(inputs.module, 'editions')"
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #       name: binaries
+      #       path: ${{ inputs.module }}
 
-      - name: Display structure of downloaded files
-        shell: bash
-        run: ls -R $GITHUB_WORKSPACE/$MODULE
-        env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-          MODULE: ${{ inputs.module }}
+      # - name: Display structure of downloaded files
+      #   shell: bash
+      #   run: ls -R $GITHUB_WORKSPACE/$MODULE
+      #   env:
+      #     GITHUB_WORKSPACE: ${{ github.workspace }}
+      #     MODULE: ${{ inputs.module }}
 
       - name: Cache npm dependencies
         id: npm-cache
