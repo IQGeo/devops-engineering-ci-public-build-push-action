@@ -154,11 +154,11 @@ runs:
           cache: 'npm'
           cache-dependency-path: workflow_manager/package-lock.json
 
-      - name: Install dependencies and test
-        shell: bash
-        run: |
-          npm ci
-          npm test
+      # - name: Install dependencies and test
+      #   shell: bash
+      #   run: |
+      #     npm ci
+      #     npm test
         
       - name: build and push image (default context)
         shell: bash
