@@ -81,8 +81,8 @@ runs:
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
-            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
-            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
+            mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
+            mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
             pwd
             ls -la
             ls -la utils-language-packs
