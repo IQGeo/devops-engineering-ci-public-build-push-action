@@ -153,6 +153,7 @@ runs:
           SHORTENED_VERSION: ${{ inputs.shortened_version }}
           TAG: ${{ inputs.tag }}
           MODULE: ${{ inputs.module }}
+          MODULE_LOWERCASE: ${{ inputs.module_lowercase }}          
           CONTEXT_BUILD: ${{ inputs.docker_context }}
           DOCKERFILE: ${{ inputs.dockerfile_path }} 
           GITHUB_WORKSPACE: ${{ github.workspace }}
