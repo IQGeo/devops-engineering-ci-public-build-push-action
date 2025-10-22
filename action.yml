@@ -141,9 +141,14 @@ runs:
       - name: build and push image (default context)
         shell: bash
         run: |
+          # Convert module name to lowercase for image naming (Docker requirement)
+          MODULE_LOWERCASE=$(echo "$MODULE" | tr '[:upper:]' '[:lower:]')
+          echo "Original module name: $MODULE"
+          echo "Lowercase module name for image: $MODULE_LOWERCASE"
+          
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
-          docker push $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
+          docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
         env:
           VERSION: ${{ inputs.version }}
           SHORTENED_VERSION: ${{ inputs.shortened_version }}
