@@ -18,6 +18,10 @@ inputs:
     description: 'Module to build (product, devdb, editions)'
     required: true
     type: string
+  module_lowercase:
+    description: 'Module name in lowercase to comply with Docker image naming requirements'
+    required: true
+    type: string
   dockerfile_path:
     description: 'Path to the dockerfile for this specific image build (injector, platform w/ module, editions)'
     required: true
@@ -81,8 +85,8 @@ runs:
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
-            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
-            mkdir $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
+            mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
+            mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
             pwd
             ls -la
             ls -la utils-language-packs
@@ -142,15 +146,16 @@ runs:
         shell: bash
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
-          docker push $ACR/$ENGINEERING_PREFIX/$MODULE:$TAG
+          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
+          docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
         env:
           VERSION: ${{ inputs.version }}
           SHORTENED_VERSION: ${{ inputs.shortened_version }}
           TAG: ${{ inputs.tag }}
           MODULE: ${{ inputs.module }}
+          MODULE_LOWERCASE: ${{ inputs.module_lowercase }}          
           CONTEXT_BUILD: ${{ inputs.docker_context }}
-          DOCKERFILE: ${{ inputs.dockerfile_path }}
+          DOCKERFILE: ${{ inputs.dockerfile_path }} 
           GITHUB_WORKSPACE: ${{ github.workspace }}
           HARBOR: ${{ inputs.harbor }}
           HARBOR_CLI_SECRET: ${{ inputs.harbor_cli_secret }}
