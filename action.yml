@@ -146,7 +146,14 @@ runs:
         shell: bash
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
-          docker build --build-arg MODULE=$MODULE --build-arg VERSION=$VERSION --build-arg SHORTENED_VERSION=$SHORTENED_VERSION --build-arg CUTPATH=$MODULE -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
+          docker build \
+            --build-arg MODULE=$MODULE \
+            --build-arg VERSION=$VERSION \
+            --build-arg SHORTENED_VERSION=$SHORTENED_VERSION \
+            --build-arg CUTPATH=$MODULE \
+            --build-arg provenance=false \
+            -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD \
+            -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
           docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
         env:
           VERSION: ${{ inputs.version }}
