@@ -147,11 +147,12 @@ runs:
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
           docker build \
+            --provenance=false \
+            --sbom=false \
             --build-arg MODULE=$MODULE \
             --build-arg VERSION=$VERSION \
             --build-arg SHORTENED_VERSION=$SHORTENED_VERSION \
             --build-arg CUTPATH=$MODULE \
-            --build-arg provenance=false \
             -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD \
             -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
           docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
