@@ -70,6 +70,16 @@ inputs:
 runs:
     using: "composite"
     steps:
+      - name: cleaup workspace
+        shell: bash
+        run: |
+            echo "Cleaning up workspace before starting build"
+            rm -rf $GITHUB_WORKSPACE/*
+            echo "Displaying workspace after cleanup"
+            ls -la $GITHUB_WORKSPACE
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+    
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@main
         
