@@ -89,15 +89,31 @@ runs:
         shell: bash
         run: |
             echo "Copying language packs from utils-language-packs"
+
+            #Make the necessary directories for the language packs
             mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION
             mkdir -p $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks
+
+            #ENH: Could remove these, but helpful for debug visibility
             pwd
             ls -la
             ls -la utils-language-packs
-            ls -la utils-language-packs/$MODULE
-            echo "Copy Language Packs from utils-language-packs repo"
-            cp -RT $GITHUB_WORKSPACE/utils-language-packs/$MODULE/$SHORTENED_VERSION/ $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/
-            ls -la $GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/
+
+            #Check if module directory exists in language packs repo
+            #ENH: We might not even need this. It's a bit redundant since if this condition fails, logically the second would also.
+            if [ ! -d "utils-language-packs/$MODULE" ]; then
+                echo "Directory doesn't exist: utils-language-packs/$MODULE. Skipping..."
+            fi
+
+            #Check if the specific module and version exists
+            if [ -d "$GITHUB_WORKSPACE/utils-language-packs/$MODULE/$SHORTENED_VERSION" ]; then
+                echo "Language pack found for $MODULE/$SHORTENED_VERSION. Copying..."
+                #Copy the contents of the language pack to the appropriate location in the module directory
+                cp -RT "$GITHUB_WORKSPACE/utils-language-packs/$MODULE/$SHORTENED_VERSION/" "$GITHUB_WORKSPACE/$MODULE/$SHORTENED_VERSION/languagepacks/"
+            else
+                #Don't error out, just log that the language pack is missing and skip.
+                echo "No language pack found for $MODULE/$SHORTENED_VERSION. Skipping..."
+            fi
         env:
           MODULE: ${{ inputs.module }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
