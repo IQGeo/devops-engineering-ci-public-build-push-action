@@ -99,12 +99,6 @@ runs:
             ls -la
             ls -la utils-language-packs
 
-            #Check if module directory exists in language packs repo
-            #ENH: We might not even need this. It's a bit redundant since if this condition fails, logically the second would also.
-            if [ ! -d "utils-language-packs/$MODULE" ]; then
-                echo "Directory doesn't exist: utils-language-packs/$MODULE. Skipping..."
-            fi
-
             #Check if the specific module and version exists
             if [ -d "$GITHUB_WORKSPACE/utils-language-packs/$MODULE/$SHORTENED_VERSION" ]; then
                 echo "Language pack found for $MODULE/$SHORTENED_VERSION. Copying..."
