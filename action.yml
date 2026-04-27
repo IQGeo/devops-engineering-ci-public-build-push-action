@@ -70,9 +70,6 @@ inputs:
     description: 'Engineering prefix to place multi arch images in Harbor'
     type: string
     default: devops_sandbox_engineering
-  base_image:
-    description: 'Base image for centralized Dockerfile.injector'
-    required: false
 
 runs:
     using: "composite"
@@ -176,7 +173,6 @@ runs:
             --build-arg VERSION=$VERSION \
             --build-arg SHORTENED_VERSION=$SHORTENED_VERSION \
             --build-arg CUTPATH=$MODULE \
-            --build-arg BASE_IMAGE=$BASE_IMAGE \
             -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD \
             -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
           docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
@@ -196,4 +192,3 @@ runs:
           REGISTRY_USERNAME: ${{ inputs.registry_username }}
           REGISTRY_PASWORD: ${{ inputs.registry_password}}
           ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
-          BASE_IMAGE: ${{ inputs.base_image }}
