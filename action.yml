@@ -180,6 +180,7 @@ runs:
         shell: bash
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
+          docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
           docker build \
             --provenance=false \
             --sbom=false \
