@@ -180,13 +180,10 @@ runs:
         shell: bash
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
-          # Dockerfiles can reference Harbor-hosted base images (e.g. mywapp_common), so auth there too
           docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
-          docker buildx build \
-            --push \
-            --metadata-file /tmp/build-metadata.json \
-            --sbom=false \
+          docker build \
             --provenance=false \
+            --sbom=false \
             --build-arg MODULE=$MODULE \
             --build-arg VERSION=$VERSION \
             --build-arg SHORTENED_VERSION=$SHORTENED_VERSION \
