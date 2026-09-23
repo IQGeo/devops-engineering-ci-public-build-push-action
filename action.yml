@@ -234,3 +234,31 @@ runs:
         run: |
           cosign sign --yes \
             "${ACR}/${ENGINEERING_PREFIX}/${MODULE_LOWERCASE}@${DIGEST}"
+
+      - name: Install oras
+        uses: oras-project/setup-oras@v1
+
+      - name: Attach SBOM as OCI referrer (per-arch manifest)
+        shell: bash
+        env:
+          DIGEST: ${{ steps.digest.outputs.value }}
+          ACR: ${{ inputs.acr }}
+          ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
+          MODULE_LOWERCASE: ${{ inputs.module_lowercase }}
+        run: |
+          set -uo pipefail
+          IMAGE="${ACR}/${ENGINEERING_PREFIX}/${MODULE_LOWERCASE}"
+          docker buildx imagetools inspect "${IMAGE}@${DIGEST}" --format '{{json .SBOM}}' > sbom-raw.json
+          # buildx returns {"SPDX": ...} for a single platform and a platform-keyed map otherwise.
+          if jq -e 'has("SPDX")' sbom-raw.json > /dev/null 2>&1; then
+            jq '.SPDX' sbom-raw.json > spdx.json
+          else
+            jq -r 'first(.[] | .SPDX)' sbom-raw.json > spdx.json
+          fi
+          if [ ! -s spdx.json ] || [ "$(cat spdx.json)" = "null" ]; then
+            echo "::error::No SBOM attestation found on ${IMAGE}@${DIGEST}"
+            exit 1
+          fi
+          oras attach --artifact-type application/spdx+json \
+            "${IMAGE}@${DIGEST}" \
+            spdx.json:application/spdx+json
