@@ -70,6 +70,10 @@ inputs:
     description: 'Engineering prefix to place multi arch images in Harbor'
     type: string
     default: devops_sandbox_engineering
+  sbom_generator:
+    description: 'Shared BuildKit SBOM generator image (directory-mode syft scan so lockfile packages are included). Module- and version-agnostic; lives at a fixed path, not under engineering_prefix.'
+    type: string
+    default: iqgeoproddev.azurecr.io/engineering/sbom-generator:1
 
 runs:
     using: "composite"
@@ -177,20 +181,21 @@ runs:
           VERSION: ${{ inputs.version }}    
 
       - name: build and push image (default context)
+        id: build
         shell: bash
         run: |
           docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASWORD $ACR
-          docker login -u $HARBOR_USERNAME -p $HARBOR_CLI_SECRET $HARBOR
-          docker build \
-            --provenance=false \
-            --sbom=false \
+          docker buildx build \
+            --provenance=true \
+            --sbom=generator=$SBOM_GENERATOR \
+            --push \
+            --metadata-file /tmp/build-metadata.json \
             --build-arg MODULE=$MODULE \
             --build-arg VERSION=$VERSION \
             --build-arg SHORTENED_VERSION=$SHORTENED_VERSION \
             --build-arg CUTPATH=$MODULE \
             -f $GITHUB_WORKSPACE/$DOCKERFILE $CONTEXT_BUILD \
             -t $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
-          docker push $ACR/$ENGINEERING_PREFIX/$MODULE_LOWERCASE:$TAG
         env:
           VERSION: ${{ inputs.version }}
           SHORTENED_VERSION: ${{ inputs.shortened_version }}
@@ -207,3 +212,57 @@ runs:
           REGISTRY_USERNAME: ${{ inputs.registry_username }}
           REGISTRY_PASWORD: ${{ inputs.registry_password}}
           ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
+          SBOM_GENERATOR: ${{ inputs.sbom_generator }}
+
+      - name: Extract image digest
+        id: digest
+        shell: bash
+        run: |
+          DIGEST=$(jq -r '."containerimage.digest"' /tmp/build-metadata.json)
+          echo "value=$DIGEST" >> $GITHUB_OUTPUT
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image with cosign keyless
+        shell: bash
+        env:
+          DIGEST: ${{ steps.digest.outputs.value }}
+          ACR: ${{ inputs.acr }}
+          ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
+          MODULE_LOWERCASE: ${{ inputs.module_lowercase }}
+        run: |
+          cosign sign --yes \
+            "${ACR}/${ENGINEERING_PREFIX}/${MODULE_LOWERCASE}@${DIGEST}"
+
+      - name: Install oras
+        uses: oras-project/setup-oras@v1
+
+      - name: Attach SBOM as OCI referrer (per-arch manifest)
+        shell: bash
+        env:
+          DIGEST: ${{ steps.digest.outputs.value }}
+          ACR: ${{ inputs.acr }}
+          ENGINEERING_PREFIX: ${{ inputs.engineering_prefix }}
+          MODULE_LOWERCASE: ${{ inputs.module_lowercase }}
+        run: |
+          set -uo pipefail
+          IMAGE="${ACR}/${ENGINEERING_PREFIX}/${MODULE_LOWERCASE}"
+          docker buildx imagetools inspect "${IMAGE}@${DIGEST}" --format '{{json .SBOM}}' > sbom-raw.json
+          # buildx returns {"SPDX": ...} for a single platform and a platform-keyed map otherwise.
+          if jq -e 'has("SPDX")' sbom-raw.json > /dev/null 2>&1; then
+            jq '.SPDX' sbom-raw.json > spdx.json
+          else
+            jq -r 'first(.[] | .SPDX)' sbom-raw.json > spdx.json
+          fi
+          if [ ! -s spdx.json ] || [ "$(cat spdx.json)" = "null" ]; then
+            echo "::error::No SBOM attestation found on ${IMAGE}@${DIGEST}"
+            exit 1
+          fi
+          # Harbor only shows an SBOM when artifactType is its own media type; the
+          # spdx+json copy keeps the referrer discoverable in every other registry.
+          for ARTIFACT_TYPE in application/vnd.goharbor.harbor.sbom.v1 application/spdx+json; do
+            oras attach --artifact-type "$ARTIFACT_TYPE" \
+              "${IMAGE}@${DIGEST}" \
+              spdx.json:application/spdx+json
+          done
